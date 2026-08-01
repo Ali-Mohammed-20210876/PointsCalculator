@@ -142,6 +142,11 @@ button{font-family:inherit;}
 }
 .title{font-size:clamp(2.1rem,6vw,3.1rem);font-weight:800;line-height:1.15;}
 .subtitle{color:var(--ink-soft);font-size:1.02rem;margin:.65rem 0 0;max-width:34rem;}
+.slogan{
+  margin:.9rem 0 0;font-family:'Almarai',ui-sans-serif,sans-serif;font-weight:800;
+  font-size:.95rem;letter-spacing:.28em;color:var(--teal);direction:ltr;
+}
+.slogan span{color:var(--ink-soft);opacity:.6;letter-spacing:0;}
 
 .clock-wrap{
   margin-top:2rem;
@@ -325,6 +330,24 @@ button{font-family:inherit;}
 }
 .legend-item{display:flex;align-items:center;gap:.4rem;}
 
+/* ---------- DUA ---------- */
+.dua-panel{
+  background:var(--bg-elevated);
+  border:1px solid var(--border);
+  border-radius:24px;
+  padding:1.6rem 1.75rem;
+  box-shadow:0 10px 30px var(--shadow);
+  border-inline-start:4px solid var(--teal);
+}
+.dua-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem;}
+.dua-head h2{font-size:1.05rem;font-weight:800;color:var(--teal);}
+.dua-text{
+  font-family:'Almarai',ui-sans-serif,sans-serif;font-weight:700;
+  font-size:1.15rem;line-height:2;color:var(--ink);margin:0;
+  transition:opacity .25s ease;
+}
+.dua-text.fade{opacity:0;}
+
 /* ---------- FOOTER ---------- */
 .rules{
   background:var(--bg-elevated);
@@ -359,6 +382,7 @@ button{font-family:inherit;}
     <p class="eyebrow" id="eyebrowText">تحدي الستوري المشتغل</p>
     <h1 class="title" id="titleText">⚔️ المبارزة اليومية</h1>
     <p class="subtitle" id="subtitleText">كل يوم مهمة واحدة، كل إنجاز نقطة واحدة. من يصمد أطول؟</p>
+    <p class="slogan">B <span>·</span> H <span>·</span> A</p>
 
     <div class="clock-wrap">
       <div class="ring-box">
@@ -436,6 +460,14 @@ button{font-family:inherit;}
     </div>
   </section>
 
+  <section class="dua-panel">
+    <div class="dua-head">
+      <h2 id="duaTitleText">دعوة اليوم</h2>
+      <button class="nav-btn" id="duaRefresh" aria-label="دعوة جديدة">↻</button>
+    </div>
+    <p class="dua-text" id="duaText">—</p>
+  </section>
+
   <footer class="rules">
     <h3 id="rulesTitleText">قوانين المبارزة</h3>
     <ol>
@@ -484,7 +516,23 @@ button{font-family:inherit;}
     rule4: {ar:'إذا انتهى اليوم (الساعة 11:59 مساءً) بدون ضغط الزر، يُعتبر اليوم ملغيًا ولا تُحتسب عنه أي نقطة — ولا يمكن تعويضه لاحقًا.', tk:'اگر گون (آقشام ساعات ۱۱:۵۹) دوومه‌یه باسیلمان گوتارسا، اول گون یاتیریلان حساب ادیلیار وه هیچ اوتوک بریلمه‌یار — سونگرا اؤوه‌زینی دولوپ بولمایار.'},
     note: {ar:'ملاحظة: التقدّم يُحفظ محليًا في هذا المتصفح فقط.', tk:'بللیک: اؤسوش دینگه شو براوزرده یرلی گورنوشده ساقلانیار.'},
     themeAria: {ar:'تبديل المظهر', tk:'گورنوشی چالیش'},
+    duaTitle: {ar:'دعوة اليوم', tk:'شو گونکی دعا'},
+    duaRefresh: {ar:'دعوة جديدة', tk:'تازه دعا'},
   };
+  const DUAS = [
+    'اللهم ارزقنا رزقًا واسعًا حلالًا طيبًا من حيث لا نحتسب.',
+    'اللهم يسّر لنا زواجًا مباركًا وارزقنا الذرية الصالحة.',
+    'اللهم اجعلنا من أهل الجنة الفردوس الأعلى بغير حساب ولا سابقة عذاب.',
+    'اللهم اغفر لنا ذنوبنا وتب علينا إنك أنت التواب الرحيم.',
+    'اللهم صلِّ وسلم وبارك على سيدنا محمد وعلى آله وصحبه أجمعين.',
+    'اللهم اجعل خير أعمالنا خواتمها وخير أيامنا يوم نلقاك.',
+    'اللهم أغننا بحلالك عن حرامك وبفضلك عمن سواك.',
+    'اللهم ألّف بين قلوبنا وقلوب أحبتنا وارزقنا حسن الخاتمة.',
+    'اللهم إنا نسألك الجنة وما قرّب إليها من قول أو عمل، ونعوذ بك من النار وما قرّب إليها.',
+    'اللهم صلِّ على محمد كما صليت على إبراهيم إنك حميد مجيد.',
+    'اللهم ارزقنا القناعة والرضا، وبارك لنا فيما رزقتنا.',
+    'اللهم اجمع بيننا وبين أحبتنا في جنات النعيم.',
+  ];
   const WEEKDAYS_SHORT = {
     ar: ['أحد','إثن','ثلا','أرب','خمي','جمع','سبت'],
     tk: ['یک','دوش','سیش','چار','پش','آن','شن'],
@@ -511,6 +559,61 @@ button{font-family:inherit;}
   let data = {};
   try{ data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }catch(e){ data = {}; }
   function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+
+  /* ---------------- cross-device sync (kvdb.io) ---------------- */
+  const KVDB_URL = 'https://kvdb.io/9EV3F4quKb1r9iie5SyyKX/duel-data';
+  async function fetchRemote(){
+    try{
+      const res = await fetch(KVDB_URL, {cache:'no-store'});
+      if(!res.ok) return null;
+      const text = await res.text();
+      if(!text) return null;
+      return JSON.parse(text);
+    }catch(e){ return null; }
+  }
+  async function pushRemote(obj){
+    try{ await fetch(KVDB_URL, {method:'PUT', body: JSON.stringify(obj)}); }catch(e){}
+  }
+
+  /* ---------------- telegram notification ---------------- */
+  const TG_TOKEN = '8998431190:AAHSm8TKJC4FXyADd-mZdEC0vmIK-OhEI1s';
+  const TG_CHAT_ID = '-5487353989';
+  const TG_NAMES = { ali: 'علي محمد (أبو تيم)', areej: 'اريج بنت الامير (رامبو)' };
+  function notifyTelegram(player, score){
+    const text = '✅ ' + TG_NAMES[player] + ' أنجز مهمة اليوم!\nرصيده الآن: ' + score + ' نقطة.';
+    fetch('https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage', {
+      method: 'POST',
+      headers: {'Content-Type':'application/x-www-form-urlencoded'},
+      body: 'chat_id=' + encodeURIComponent(TG_CHAT_ID) + '&text=' + encodeURIComponent(text),
+    }).catch(() => {});
+  }
+  function mergeData(local, remote){
+    const merged = {};
+    const keys = new Set([...Object.keys(local||{}), ...Object.keys(remote||{})]);
+    keys.forEach(k => {
+      const l = (local && local[k]) || {};
+      const r = (remote && remote[k]) || {};
+      merged[k] = {};
+      ['ali','areej'].forEach(p => {
+        if(l[p] || r[p]){
+          merged[k][p] = true;
+          const lt = l[p+'_time'], rt = r[p+'_time'];
+          merged[k][p+'_time'] = (lt && rt) ? (lt < rt ? lt : rt) : (lt || rt);
+        }
+      });
+    });
+    return merged;
+  }
+  async function syncFromRemote(){
+    const remote = await fetchRemote();
+    if(remote === null) return;
+    const merged = mergeData(data, remote);
+    const mergedStr = JSON.stringify(merged);
+    if(mergedStr !== JSON.stringify(data)){
+      data = merged; save(); renderArena(); renderCalendar();
+    }
+    if(mergedStr !== JSON.stringify(remote)) pushRemote(merged);
+  }
 
   let viewYear, viewMonth;
   (function(){ const tD = new Date(); viewYear = tD.getFullYear(); viewMonth = tD.getMonth(); })();
@@ -577,6 +680,8 @@ button{font-family:inherit;}
     document.getElementById('rule3').textContent = t('rule3');
     document.getElementById('rule4').textContent = t('rule4');
     document.getElementById('noteText').textContent = t('note');
+    document.getElementById('duaTitleText').textContent = t('duaTitle');
+    document.getElementById('duaRefresh').setAttribute('aria-label', t('duaRefresh'));
     els.prevMonth.setAttribute('aria-label', t('navPrev'));
     els.nextMonth.setAttribute('aria-label', t('navNext'));
     els.themeToggle.setAttribute('aria-label', t('themeAria'));
@@ -659,6 +764,8 @@ button{font-family:inherit;}
     save();
     renderArena();
     renderCalendar();
+    pushRemote(data);
+    notifyTelegram(player, computeScore(player));
   }
   playerEls.ali.btn.addEventListener('click', () => complete('ali'));
   playerEls.areej.btn.addEventListener('click', () => complete('areej'));
@@ -751,8 +858,26 @@ button{font-family:inherit;}
     }
   }
 
+  /* ---------------- dua ---------------- */
+  const duaTextEl = document.getElementById('duaText');
+  let lastDuaIndex = -1;
+  function showRandomDua(){
+    let idx;
+    do{ idx = Math.floor(Math.random() * DUAS.length); }while(DUAS.length > 1 && idx === lastDuaIndex);
+    lastDuaIndex = idx;
+    duaTextEl.classList.add('fade');
+    setTimeout(() => {
+      duaTextEl.textContent = DUAS[idx];
+      duaTextEl.classList.remove('fade');
+    }, 200);
+  }
+  document.getElementById('duaRefresh').addEventListener('click', showRandomDua);
+  duaTextEl.textContent = DUAS[Math.floor(Math.random() * DUAS.length)];
+
   applyLang(lang, false);
   tick();
   setInterval(tick, 1000);
+  syncFromRemote();
+  setInterval(syncFromRemote, 20000);
 })();
 </script>
